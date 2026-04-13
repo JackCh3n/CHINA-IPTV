@@ -87,7 +87,7 @@ def parse_content(content, is_m3u=False):
     if '#EXTM3U' in content or '#EXTINF' in content:
         is_m3u = True
 
-    lines = content.split('\n')  # ✅ 使用正确的换行符
+    lines = content.split('\n')
     channels = {}
     current_group = '未分组'
     channel_count = 0
@@ -130,8 +130,9 @@ def parse_content(content, is_m3u=False):
                 if len(parts) == 2:
                     name = parts[0].strip()
                     url = parts[1].strip()
-                    if url.startswith('http'):
-                        name = mapping.get(name, name)
+                    # ✅ 修复：放宽URL检查，与M3U一致（只要不是注释行就保留）
+                    if url and not url.startswith('#'):
+                        name = mapping.get(name, name)  # 映射频道名
                         if current_group not in channels:
                             channels[current_group] = []
                         channels[current_group].append(f"{name},{url}")
@@ -220,7 +221,7 @@ def main():
                     if line not in matched_lines:
                         sorted_content.append(line)
                         matched_lines.add(line)
-                    break
+                    # ✅ 修复：移除break，允许多源合并时匹配同一频道的多个URL
         sorted_content.append("")
 
     # 剩余未匹配的归入"其它"
