@@ -61,6 +61,7 @@ CCTV-17农业农村,CCTV17
 CGTN 新闻,CGTN
 CGTN新闻,CGTN
 CGTNEN,CGTN
+CGTN英语,CGTN
 CGTN西班牙语,CGTN西语
 cgtnsp,CGTN西语
 cgtnfrench,CGTN法语
@@ -68,6 +69,7 @@ cgtnru,CGTN俄语
 CGTN阿拉伯语,CGTN阿语
 CGTNALBY,CGTN阿语
 CGTN外语纪录,CGTN纪录
+CGTN记录,CGTN纪录
 cgtndocumentary,CGTN纪录
 安徽卫视,安徽卫视
 北京卫视,北京卫视
