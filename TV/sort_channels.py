@@ -221,14 +221,23 @@ def main():
                     if line not in matched_lines:
                         sorted_content.append(line)
                         matched_lines.add(line)
-                    # ✅ 修复：移除break，允许多源合并时匹配同一频道的多个URL
+                    # 不移除break，允许多源同一频道多个URL
         sorted_content.append("")
 
     # 剩余未匹配的归入"其它"
     other_lines = [line for line in all_lines if line not in matched_lines]
-    if other_lines:
+
+    # ✅ 去重：保留顺序，去除完全重复的行
+    seen = set()
+    other_lines_unique = []
+    for line in other_lines:
+        if line not in seen:
+            other_lines_unique.append(line)
+            seen.add(line)
+
+    if other_lines_unique:
         sorted_content.append("其它,#genre#")
-        sorted_content.extend(other_lines)
+        sorted_content.extend(other_lines_unique)
         sorted_content.append("")
 
     # 保存结果
@@ -237,8 +246,8 @@ def main():
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(sorted_content))
         print(f"\n✅ 多源合并完成，已保存为 {output_path}")
-        print(f"📊 统计: {len(matched_lines)}个匹配频道, {len(other_lines)}个未分类频道")
-        print(f"📊 总计写入频道数: {len(matched_lines) + len(other_lines)}")
+        print(f"📊 统计: {len(matched_lines)}个匹配频道, {len(other_lines_unique)}个未分类频道")
+        print(f"📊 总计写入频道数: {len(matched_lines) + len(other_lines_unique)}")
     except Exception as e:
         print(f"保存文件时出错: {e}")
 
