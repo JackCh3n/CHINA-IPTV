@@ -194,6 +194,7 @@ CGTNDocumentary_,CGTN纪录
 浙江卫视,浙江卫视
 浙江卫视4k,浙江卫视
 CETV早期教育,CETV
+早期教育,CETV
 中国教育1台,CETV1
 cetv1,CETV1
 CETV1,CETV1
