@@ -211,7 +211,7 @@
     <tr>
         <td>江苏</td>
         <td><a href="./Unicast/jiangsu/unicom.txt">🔗单播</a></td>
-        <td><a href="./Multicast/jiangsu/unicom.txt">🌐暂无</a></td>
+        <td><a href="./Multicast/jiangsu/unicom.txt">🛰️组播</a></td>
         <td><a href="./Unicast/jiangsu/mobile.txt">🔗单播</a></td>
         <td><a href="./Multicast/jiangsu/mobile.txt">🌐暂无</a></td>
         <td><a href="./Unicast/jiangsu/telecom.txt">🔗单播</a></td>
