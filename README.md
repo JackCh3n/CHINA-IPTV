@@ -91,7 +91,7 @@
     </tr>
     <tr>
         <td>北京</td>
-        <td><a href="./Multicast/beijing/unicom.txt">🌐暂无</a></td>
+        <td><a href="./Unicast/beijing/unicom.txt">🔗单播</a></td>
         <td><a href="./Multicast/beijing/unicom.txt">🛰️组播</a></td>
         <td><a href="./Unicast/beijing/mobile.txt">🔗单播</a></td>
         <td><a href="./Multicast/beijing/mobile.txt">🛰️组播</a></td>
