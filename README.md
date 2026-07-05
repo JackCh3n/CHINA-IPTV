@@ -351,7 +351,7 @@
         <td>云南</td>
         <td><a href="./Unicast/yunnan/unicom.txt">🌐暂无</a></td>
         <td><a href="./Multicast/yunnan/unicom.txt">🛰️组播</a></td>
-        <td><a href="./Unicast/yunnan/mobile.txt">🌐暂无</a></td>
+        <td><a href="./Unicast/yunnan/mobile.txt">🔗单播</a></td>
         <td><a href="./Multicast/yunnan/mobile.txt">🛰️组播</a></td>
         <td><a href="./Unicast/yunnan/telecom.txt">🔗单播</a></td>
         <td><a href="./Multicast/yunnan/telecom.txt">🛰️组播</a></td>
