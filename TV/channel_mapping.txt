@@ -447,12 +447,15 @@ SCTV13,星空城市
 合信佳,HXJ
 TVBS
 TVBS新闻,TVBS新聞
-TVBS精采
-TVBS歡樂
-TVBS綜藝
-TVBS台劇
+TVBS新闻台,TVBS新聞
+TVBS新聞台,TVBS新聞
+TVBS精采台,TVBS精采
+TVBS歡樂台,TVBS歡樂
+TVBS綜藝台,TVBS綜藝
+TVBS台劇台,TVBS台劇
 民視
 民视新闻,民視新聞
-民視台灣
+民视新闻台,民視新聞
+民視台灣台,民視台灣
 民視台灣
 
