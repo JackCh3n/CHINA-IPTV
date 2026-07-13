@@ -445,3 +445,14 @@ SCTV13,星空城市
 浙江少儿
 浙江国际
 合信佳,HXJ
+TVBS
+TVBS新闻,TVBS新聞
+TVBS精采
+TVBS歡樂
+TVBS綜藝
+TVBS台劇
+民視
+民视新闻,民視新聞
+民視台灣
+民視台灣
+
