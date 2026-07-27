@@ -98,7 +98,6 @@ def load_channel_mapping():
                 if not line or "," not in line:
                     continue
                 old_name, new_name = line.split(",", 1)
-                # 标准化key，value也可以标准化
                 std_key = normalize_channel_name(old_name.strip())
                 std_value = normalize_channel_name(new_name.strip())
                 mapping[std_key] = std_value
@@ -108,17 +107,18 @@ def load_channel_mapping():
     return mapping
 
 def parse_content(content, is_m3u=False):
-    """解析内容（自动识别M3U或TXT格式），返回(内容, 频道数)"""
-    mapping = load_channel_mapping()
+    """
+    解析内容（自动识别M3U或TXT格式），返回(内容, 频道数)
+    注意：此函数只做标准化，不应用映射表，映射在输出阶段进行
+    """
+    lines = content.split('\n')
+    channels = {}          # group -> list of (original_name, url)
+    current_group = '未分组'
+    channel_count = 0
 
     # 自动检测格式
     if '#EXTM3U' in content or '#EXTINF' in content:
         is_m3u = True
-
-    lines = content.split('\n')
-    channels = {}
-    current_group = '未分组'
-    channel_count = 0
 
     if is_m3u:
         # 解析M3U格式
@@ -127,27 +127,24 @@ def parse_content(content, is_m3u=False):
             if line.startswith('#EXTINF:'):
                 group_match = re.search(r'group-title="([^"]*)"', line)
                 group = group_match.group(1) if group_match else current_group
-                # ✅ 关键修改：对分组名也进行标准化
+                # 标准化分组名
                 group = normalize_channel_name(group)
 
                 name_match = re.search(r'tvg-name="([^"]*)"', line)
                 name = name_match.group(1) if name_match else line.split(',')[-1].strip()
-
-                # 标准化频道名
+                # 只标准化，不映射
                 name = normalize_channel_name(name)
-                # 应用映射表
-                name = mapping.get(name, name)
 
                 if i + 1 < len(lines):
                     url = lines[i + 1].strip()
                     if url and not url.startswith('#'):
                         if group not in channels:
                             channels[group] = []
-                        channels[group].append(f"{name},{url}")
+                        channels[group].append((name, url))
                         channel_count += 1
                         current_group = group
     else:
-        # 解析TXT格式（不变）
+        # 解析TXT格式
         for line in lines:
             line = line.strip()
             if not line:
@@ -164,17 +161,16 @@ def parse_content(content, is_m3u=False):
                     url = parts[1].strip()
                     if url and not url.startswith('#'):
                         name = normalize_channel_name(name)
-                        name = mapping.get(name, name)
                         if current_group not in channels:
                             channels[current_group] = []
-                        channels[current_group].append(f"{name},{url}")
+                        channels[current_group].append((name, url))
                         channel_count += 1
 
-    # 转换为TXT格式输出
+    # 转换为TXT格式输出（只保存标准化后的名称，不映射）
     txt_content = ""
     for group, channel_list in channels.items():
         txt_content += f"{group},#genre#\n"
-        txt_content += "\n".join(channel_list) + "\n\n"
+        txt_content += "\n".join([f"{name},{url}" for name, url in channel_list]) + "\n\n"
     return txt_content.strip(), channel_count
 
 def fetch_content(url):
@@ -235,9 +231,13 @@ def main():
         print("分类数据为空，请检查模板文件格式")
         return
 
+    # 加载映射表
+    mapping = load_channel_mapping()
+
     # 处理内容
     lines = all_content.splitlines()
     sorted_content = []
+    # all_lines 存储格式：标准化名称,url （未映射）
     all_lines = [line.strip() for line in lines if line.strip() and "#genre#" not in line]
 
     # 记录已匹配行
@@ -245,16 +245,16 @@ def main():
 
     # 按模板分类整理频道（跳过空分类）
     for category, channels in categories.items():
-        category_matched = []  # 记录该分类下匹配到的频道
+        category_matched = []  # 存储匹配到的行（原始行，但名称是标准化后的）
         for channel in channels:
-            # 标准化模板中的频道名
+            # 标准化模板中的频道名（不映射）
             std_channel = normalize_channel_name(channel)
             channel_pattern = re.escape(std_channel)
             for line in all_lines:
-                # 提取行中的频道名（逗号前的内容）进行标准化匹配
                 parts = line.split(',', 1)
                 if len(parts) >= 2:
-                    line_channel = normalize_channel_name(parts[0])
+                    line_channel = normalize_channel_name(parts[0])  # 已经是标准化后的
+                    # 直接匹配，不应用映射表
                     if re.match(rf"^{channel_pattern}$", line_channel, re.IGNORECASE):
                         if line not in matched_lines:
                             category_matched.append(line)
@@ -263,7 +263,17 @@ def main():
         # 只有当该分类有匹配的频道时，才输出分类标题和内容
         if category_matched:
             sorted_content.append(f"{category},#genre#")
-            sorted_content.extend(category_matched)
+            # 对匹配到的每一行，应用映射表重新生成频道名
+            for line in category_matched:
+                parts = line.split(',', 1)
+                if len(parts) == 2:
+                    name = parts[0]
+                    url = parts[1]
+                    # 应用映射表
+                    mapped_name = mapping.get(name, name)
+                    sorted_content.append(f"{mapped_name},{url}")
+                else:
+                    sorted_content.append(line)
             sorted_content.append("")
 
     # 剩余未匹配的归入"其它"
@@ -279,7 +289,15 @@ def main():
 
     if other_lines_unique:
         sorted_content.append("其它,#genre#")
-        sorted_content.extend(other_lines_unique)
+        for line in other_lines_unique:
+            parts = line.split(',', 1)
+            if len(parts) == 2:
+                name = parts[0]
+                url = parts[1]
+                mapped_name = mapping.get(name, name)
+                sorted_content.append(f"{mapped_name},{url}")
+            else:
+                sorted_content.append(line)
         sorted_content.append("")
 
     # 保存结果
