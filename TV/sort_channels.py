@@ -243,9 +243,9 @@ def main():
     # 记录已匹配行
     matched_lines = set()
 
-    # 按模板分类整理频道
+    # 按模板分类整理频道（跳过空分类）
     for category, channels in categories.items():
-        sorted_content.append(f"{category},#genre#")
+        category_matched = []  # 记录该分类下匹配到的频道
         for channel in channels:
             # 标准化模板中的频道名
             std_channel = normalize_channel_name(channel)
@@ -257,9 +257,14 @@ def main():
                     line_channel = normalize_channel_name(parts[0])
                     if re.match(rf"^{channel_pattern}$", line_channel, re.IGNORECASE):
                         if line not in matched_lines:
-                            sorted_content.append(line)
+                            category_matched.append(line)
                             matched_lines.add(line)
-        sorted_content.append("")
+
+        # 只有当该分类有匹配的频道时，才输出分类标题和内容
+        if category_matched:
+            sorted_content.append(f"{category},#genre#")
+            sorted_content.extend(category_matched)
+            sorted_content.append("")
 
     # 剩余未匹配的归入"其它"
     other_lines = [line for line in all_lines if line not in matched_lines]
