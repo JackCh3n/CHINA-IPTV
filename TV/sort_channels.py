@@ -262,19 +262,21 @@ def main():
 
         # 只有当该分类有匹配的频道时，才输出分类标题和内容
         if category_matched:
-            sorted_content.append(f"{category},#genre#")
-            # 对匹配到的每一行，应用映射表重新生成频道名
+            # 过滤掉无效行（没有逗号或URL为空）
+            valid_lines = []
             for line in category_matched:
                 parts = line.split(',', 1)
-                if len(parts) == 2:
+                if len(parts) == 2 and parts[1].strip():
+                    valid_lines.append(line)
+            if valid_lines:
+                sorted_content.append(f"{category},#genre#")
+                for line in valid_lines:
+                    parts = line.split(',', 1)
                     name = parts[0]
                     url = parts[1]
-                    # 应用映射表
                     mapped_name = mapping.get(name, name)
                     sorted_content.append(f"{mapped_name},{url}")
-                else:
-                    sorted_content.append(line)
-            sorted_content.append("")
+                sorted_content.append("")
 
     # 剩余未匹配的归入"其它"
     other_lines = [line for line in all_lines if line not in matched_lines]
