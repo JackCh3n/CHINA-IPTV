@@ -125,6 +125,7 @@ CGTN外语纪录,CGTN纪录
 CGTN记录,CGTN纪录
 CGTN纪录,CGTN纪录
 CGTN纪录,CGTN纪录
+CGTN纪录片,CGTN纪录
 cgtndocumentary,CGTN纪录
 CGTNDocumentary,CGTN纪录
 CGTNDocumentary,CGTN纪录
