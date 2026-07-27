@@ -416,7 +416,7 @@
             padding: 20px 25px;
             border-radius: 10px;
             flex: 1;
-            min-width: 160px;
+            min-width: 140px;
             text-align: center;
         }
         .stat-card .label {
@@ -529,6 +529,7 @@
             <textarea id="mappingEditor" placeholder="格式：原始名称,标准化名称&#10;例如：CCTV1综合,CCTV1&#10;CCTV-1HD,CCTV1" rows="5"></textarea>
         </div>
 
+        <!-- 统计卡片：新增“匹配分类” -->
         <div class="stats" id="stats" style="display: none;">
             <div class="stat-card">
                 <div class="label">总频道数</div>
@@ -541,6 +542,10 @@
             <div class="stat-card">
                 <div class="label">未分类频道</div>
                 <div class="value" id="unmatchedChannels">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="label">匹配分类</div>
+                <div class="value" id="matchedCategories">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">合并文件数</div>
@@ -594,6 +599,7 @@
     const totalChannels = document.getElementById('totalChannels');
     const matchedChannels = document.getElementById('matchedChannels');
     const unmatchedChannels = document.getElementById('unmatchedChannels');
+    const matchedCategories = document.getElementById('matchedCategories');
     const fileCount2 = document.getElementById('fileCount2');
     const fileList = document.getElementById('fileList');
     const fileItems = document.getElementById('fileItems');
@@ -1115,24 +1121,31 @@ CGTN纪录
 
             const mappedLines = mappedItems.map(item => item.line);
 
-            // 第三步：按模板排序
+            // 第三步：按模板排序（先收集匹配的行，再决定是否输出分类）
             const matchedLines = new Set();
             const sortedContent = [];
+            let matchedCategoryCount = 0;   // 匹配分类计数
 
             for (const [category, channels] of Object.entries(categories)) {
-                sortedContent.push(`${category},#genre#`);
+                const categoryLines = [];   // 存储该分类匹配到的行
                 for (const channel of channels) {
                     const stdChannel = normalizeChannelName(channel);
                     const channelPattern = stdChannel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                     const regex = new RegExp(`^\\s*${channelPattern}\\s*,`, 'i');
                     for (const line of mappedLines) {
                         if (regex.test(line) && !matchedLines.has(line)) {
-                            sortedContent.push(line);
+                            categoryLines.push(line);
                             matchedLines.add(line);
                         }
                     }
                 }
-                sortedContent.push('');
+                // 如果有匹配的行，才输出分类
+                if (categoryLines.length > 0) {
+                    matchedCategoryCount++;
+                    sortedContent.push(`${category},#genre#`);
+                    sortedContent.push(...categoryLines);
+                    sortedContent.push('');
+                }
             }
 
             const unmatchedLines = mappedLines.filter(line => !matchedLines.has(line));
@@ -1161,6 +1174,7 @@ CGTN纪录
             totalChannels.textContent = mappedLines.length;
             matchedChannels.textContent = matchedLines.size;
             unmatchedChannels.textContent = unmatchedLines.length;
+            matchedCategories.textContent = matchedCategoryCount;
             fileCount2.textContent = uploadedFiles.length;
             stats.style.display = 'flex';
 
@@ -1198,7 +1212,7 @@ CGTN纪录
                     `⚠️ 去重提示：发现 ${urlDupList.length} 条重复URL，已自动去重。被去重的频道：${urlDupList.map(d => d.originalName).join('、')}`,
                     detailsHtml);
             } else {
-                showStatus('success', `✅ 处理完成！合并 ${uploadedFiles.length} 个文件，扫描 ${totalRawCount} 条记录，无重复URL，最终输出 ${mappedLines.length} 个频道，匹配 ${matchedLines.size} 个频道。`);
+                showStatus('success', `✅ 处理完成！合并 ${uploadedFiles.length} 个文件，扫描 ${totalRawCount} 条记录，无重复URL，最终输出 ${mappedLines.length} 个频道，匹配 ${matchedLines.size} 个频道，匹配分类 ${matchedCategoryCount} 个。`);
             }
         } catch (error) {
             showStatus('error', `❌ 处理出错: ${error.message}`);
