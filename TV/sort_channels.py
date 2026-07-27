@@ -106,19 +106,22 @@ def load_channel_mapping():
         print(f"加载映射表失败: {e}")
     return mapping
 
-def parse_content(content, is_m3u=False):
+def parse_content(content):
     """
-    解析内容（自动识别M3U或TXT格式），返回(内容, 频道数)
-    注意：此函数只做标准化，不应用映射表，映射在输出阶段进行
+    解析内容（自动识别M3U或TXT格式），返回 (channels_dict, channel_count)
+    channels_dict: {group_name: [(normalized_name, url), ...]}
+    注意：只做标准化，不应用映射表
     """
     lines = content.split('\n')
-    channels = {}          # group -> list of (original_name, url)
+    channels = {}          # group -> list of (name, url)
     current_group = '未分组'
     channel_count = 0
 
     # 自动检测格式
     if '#EXTM3U' in content or '#EXTINF' in content:
         is_m3u = True
+    else:
+        is_m3u = False
 
     if is_m3u:
         # 解析M3U格式
@@ -152,6 +155,8 @@ def parse_content(content, is_m3u=False):
 
             if ",#genre#" in line:
                 current_group = line.split(",")[0].strip()
+                # 标准化分组名
+                current_group = normalize_channel_name(current_group)
                 if current_group not in channels:
                     channels[current_group] = []
             elif ',' in line and not line.startswith('#'):
@@ -166,15 +171,10 @@ def parse_content(content, is_m3u=False):
                         channels[current_group].append((name, url))
                         channel_count += 1
 
-    # 转换为TXT格式输出（只保存标准化后的名称，不映射）
-    txt_content = ""
-    for group, channel_list in channels.items():
-        txt_content += f"{group},#genre#\n"
-        txt_content += "\n".join([f"{name},{url}" for name, url in channel_list]) + "\n\n"
-    return txt_content.strip(), channel_count
+    return channels, channel_count
 
 def fetch_content(url):
-    """从URL获取内容，自动识别格式并转换，返回(内容, 频道数)"""
+    """从URL获取内容，自动识别格式并转换，返回 (channels_dict, channel_count)"""
     try:
         print(f"正在获取: {url}")
 
@@ -188,10 +188,29 @@ def fetch_content(url):
         return parse_content(content)
     except requests.exceptions.RequestException as e:
         print(f"请求失败: {e}")
-        return "", 0
+        return {}, 0
     except Exception as e:
         print(f"处理内容时出错: {e}")
-        return "", 0
+        return {}, 0
+
+def merge_channels_dicts(dicts):
+    """
+    合并多个分组字典，去重（基于url去重，保留第一次出现的频道名）
+    返回合并后的字典和总频道数
+    """
+    merged = {}
+    seen_urls = set()
+    total = 0
+    for d in dicts:
+        for group, items in d.items():
+            if group not in merged:
+                merged[group] = []
+            for name, url in items:
+                if url not in seen_urls:
+                    merged[group].append((name, url))
+                    seen_urls.add(url)
+                    total += 1
+    return merged, total
 
 def main():
     # 确保TV目录存在
@@ -202,28 +221,28 @@ def main():
     source_urls = load_source_urls()
     print(f"\n共加载 {len(source_urls)} 个源地址")
 
-    # 获取并合并内容
-    all_content = ""
-    total_channels = 0
+    # 获取并合并内容（直接获取分组字典）
+    all_dicts = []
     success_count = 0
-
     for idx, url in enumerate(source_urls, 1):
         print(f"\n--- 处理第 {idx}/{len(source_urls)} 个源 ---")
-        content, channel_count = fetch_content(url)
-        if content:
-            all_content += content + "\n\n"
-            total_channels += channel_count
+        channels, count = fetch_content(url)
+        if channels:
+            all_dicts.append(channels)
             success_count += 1
-            print(f"✅ 源 {idx} 获取成功，频道数: {channel_count}")
+            print(f"✅ 源 {idx} 获取成功，频道数: {count}")
         else:
             print(f"❌ 源 {idx} 获取失败或内容为空")
 
     print(f"\n📊 成功获取 {success_count}/{len(source_urls)} 个源")
-    print(f"📊 总计频道数: {total_channels}")
 
-    if not all_content:
+    if not all_dicts:
         print("错误：未能获取任何有效内容")
         return
+
+    # 合并所有分组字典（去重）
+    merged_channels, total_channels = merge_channels_dicts(all_dicts)
+    print(f"📊 合并后总计频道数: {total_channels}")
 
     # 加载模板分类
     categories = load_categories_from_template()
@@ -234,72 +253,54 @@ def main():
     # 加载映射表
     mapping = load_channel_mapping()
 
-    # 处理内容
-    lines = all_content.splitlines()
+    # 输出结果：按模板分类整理
     sorted_content = []
-    # all_lines 存储格式：标准化名称,url （未映射）
-    all_lines = [line.strip() for line in lines if line.strip() and "#genre#" not in line]
+    matched_count = 0
 
-    # 记录已匹配行
-    matched_lines = set()
+    # 遍历模板中的每个分类
+    for category, channel_list in categories.items():
+        # 查找merged_channels中与category匹配的分组
+        # 注意：模板分类名可能包含中文，而分组名已被标准化，需要标准化后再比较
+        std_category = normalize_channel_name(category)
 
-    # 按模板分类整理频道（跳过空分类）
-    for category, channels in categories.items():
-        category_matched = []  # 存储匹配到的行（原始行，但名称是标准化后的）
-        for channel in channels:
-            # 标准化模板中的频道名（不映射）
-            std_channel = normalize_channel_name(channel)
-            channel_pattern = re.escape(std_channel)
-            for line in all_lines:
-                parts = line.split(',', 1)
-                if len(parts) >= 2:
-                    line_channel = normalize_channel_name(parts[0])  # 已经是标准化后的
-                    # 直接匹配，不应用映射表
-                    if re.match(rf"^{channel_pattern}$", line_channel, re.IGNORECASE):
-                        if line not in matched_lines:
-                            category_matched.append(line)
-                            matched_lines.add(line)
+        # 收集该分类下的所有频道（从merged_channels中提取）
+        category_items = []
+        # 遍历merged_channels的所有分组
+        for group, items in merged_channels.items():
+            # 如果分组名与模板分类名匹配（标准化后）
+            if group == std_category:
+                category_items.extend(items)
 
-        # 只有当该分类有匹配的频道时，才输出分类标题和内容
-        if category_matched:
-            # 过滤掉无效行（没有逗号或URL为空）
-            valid_lines = []
-            for line in category_matched:
-                parts = line.split(',', 1)
-                if len(parts) == 2 and parts[1].strip():
-                    valid_lines.append(line)
-            if valid_lines:
-                sorted_content.append(f"{category},#genre#")
-                for line in valid_lines:
-                    parts = line.split(',', 1)
-                    name = parts[0]
-                    url = parts[1]
-                    mapped_name = mapping.get(name, name)
-                    sorted_content.append(f"{mapped_name},{url}")
-                sorted_content.append("")
-
-    # 剩余未匹配的归入"其它"
-    other_lines = [line for line in all_lines if line not in matched_lines]
-
-    # 去重：保留顺序，去除完全重复的行
-    seen = set()
-    other_lines_unique = []
-    for line in other_lines:
-        if line not in seen:
-            other_lines_unique.append(line)
-            seen.add(line)
-
-    if other_lines_unique:
-        sorted_content.append("其它,#genre#")
-        for line in other_lines_unique:
-            parts = line.split(',', 1)
-            if len(parts) == 2:
-                name = parts[0]
-                url = parts[1]
+        # 如果该分类有频道，则输出
+        if category_items:
+            sorted_content.append(f"{category},#genre#")
+            for name, url in category_items:
+                # 应用映射表
                 mapped_name = mapping.get(name, name)
                 sorted_content.append(f"{mapped_name},{url}")
-            else:
-                sorted_content.append(line)
+            sorted_content.append("")
+            matched_count += len(category_items)
+
+    # 统计未匹配的频道：属于merged_channels但不在任何模板分类中的频道
+    # 由于我们按分组匹配，所有分组都会处理，但可能某些分组没有在模板中定义（如"未分组"或"4K频道"）
+    # 这些分组会被忽略，归入"其它"
+    # 更好的方式是收集所有已匹配的频道名，但这里我们简单处理：所有不在模板分类中的分组都归入"其它"
+    other_items = []
+    for group, items in merged_channels.items():
+        # 检查这个分组是否在模板中（标准化后比较）
+        found = False
+        for category in categories.keys():
+            if normalize_channel_name(category) == group:
+                found = True
+                break
+        if not found:
+            other_items.extend(items)
+
+    if other_items:
+        sorted_content.append("其它,#genre#")
+        for name, url in other_items:
+            mapped_name = mapping.get(name, name)
+            sorted_content.append(f"{mapped_name},{url}")
         sorted_content.append("")
 
     # 保存结果
@@ -308,8 +309,8 @@ def main():
         with open(output_path, "w", encoding="utf-8") as f:
             f.write("\n".join(sorted_content))
         print(f"\n✅ 多源合并完成，已保存为 {output_path}")
-        print(f"📊 统计: {len(matched_lines)}个匹配频道, {len(other_lines_unique)}个未分类频道")
-        print(f"📊 总计写入频道数: {len(matched_lines) + len(other_lines_unique)}")
+        print(f"📊 统计: {matched_count}个匹配频道, {len(other_items)}个未分类频道")
+        print(f"📊 总计写入频道数: {matched_count + len(other_items)}")
     except Exception as e:
         print(f"保存文件时出错: {e}")
 
