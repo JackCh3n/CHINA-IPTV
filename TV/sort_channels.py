@@ -127,6 +127,8 @@ def parse_content(content, is_m3u=False):
             if line.startswith('#EXTINF:'):
                 group_match = re.search(r'group-title="([^"]*)"', line)
                 group = group_match.group(1) if group_match else current_group
+                # ✅ 关键修改：对分组名也进行标准化
+                group = normalize_channel_name(group)
 
                 name_match = re.search(r'tvg-name="([^"]*)"', line)
                 name = name_match.group(1) if name_match else line.split(',')[-1].strip()
@@ -145,7 +147,7 @@ def parse_content(content, is_m3u=False):
                         channel_count += 1
                         current_group = group
     else:
-        # 解析TXT格式
+        # 解析TXT格式（不变）
         for line in lines:
             line = line.strip()
             if not line:
@@ -161,9 +163,7 @@ def parse_content(content, is_m3u=False):
                     name = parts[0].strip()
                     url = parts[1].strip()
                     if url and not url.startswith('#'):
-                        # 标准化频道名
                         name = normalize_channel_name(name)
-                        # 应用映射表
                         name = mapping.get(name, name)
                         if current_group not in channels:
                             channels[current_group] = []
