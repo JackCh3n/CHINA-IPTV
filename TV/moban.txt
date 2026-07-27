@@ -58,13 +58,6 @@ CGTN纪录
 新疆卫视
 云南卫视
 浙江卫视
-教育,#genre#
-CETV
-CETV1
-CETV2
-CETV3
-CETV4
-山东教育卫视
 地方,#genre#
 安徽经济生活
 安徽综艺体育
@@ -354,6 +347,13 @@ XJTV-12
 浙江卫视(美洲)
 浙江卫视(欧洲)
 好易购
+教育,#genre#
+CETV
+CETV1
+CETV2
+CETV3
+CETV4
+山东教育卫视
 台港澳,#genre#
 TVBS
 TVBS新闻台
