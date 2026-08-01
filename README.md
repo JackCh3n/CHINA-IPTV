@@ -45,7 +45,7 @@
       <td><a href="https://www.videolan.org/vlc/download-ios.html">VLC media player</a></td>
     </tr>
     <tr>
-      <td><a href="https://potplayer.org/">PotPlayer</a></td>
+      <td><a href="https://potplayer.tv/?lang=zh_CN">PotPlayer</a></td>
       <td><a href="https://github.com/o0HalfLife0o/TVBoxOSC/releases">TVBOX</a></td>
       <td><a href="https://github.com/o0HalfLife0o/TVBoxOSC/releases">TVBOX</a></td>
       <td><a href="https://apps.apple.com/cn/app/aptv/id1630403500">APTV</a></td>
