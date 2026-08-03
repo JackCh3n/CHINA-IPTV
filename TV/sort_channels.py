@@ -5,12 +5,13 @@ import os
 def normalize_channel_name(name):
     if not name:
         return ''
+    # 先去除常见分隔符（空格、下划线、连字符）
     normalized = re.sub(r'[-\s_]+', '', name)
-    remove_words = ['频道', '普清', '高清', 'HD']
-    for word in remove_words:
-        normalized = re.sub(word, '', normalized, flags=re.IGNORECASE)
-    normalized = normalized.upper()
-    return normalized.strip()
+    # 只移除末尾的关键词（可附加'标清'等）
+    normalized = re.sub(r'(频道|普清|标清|高清|超高清|720P|1080P|HD)$', '', normalized, flags=re.IGNORECASE)
+    # 再去掉可能残留的末尾分隔符
+    normalized = re.sub(r'[-\s_]+$', '', normalized)
+    return normalized.upper().strip()
 
 def load_source_urls():
     source_path = "TV/sources.txt"
