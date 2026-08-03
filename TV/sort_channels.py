@@ -8,7 +8,7 @@ def normalize_channel_name(name):
     # 先去除常见分隔符（空格、下划线、连字符）
     normalized = re.sub(r'[-\s_]+', '', name)
     # 只移除末尾的关键词（可附加'标清'等）
-    normalized = re.sub(r'(频道|普清|标清|超高清|高清|720P|1080P|HD)$', '', normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r'(频道|普清|标清|高清|超清|720P|1080P|HD)$', '', normalized, flags=re.IGNORECASE)
     # 再去掉可能残留的末尾分隔符
     normalized = re.sub(r'[-\s_]+$', '', normalized)
     return normalized.upper().strip()
