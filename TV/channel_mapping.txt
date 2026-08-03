@@ -207,6 +207,7 @@ CETV1,CETV1
 中国教育1,CETV1
 中国教育1台,CETV1
 中国教育一套,CETV1
+中国教育一台,CETV1
 中国教育电视台1,CETV1
 cetv2,CETV2
 CETV2,CETV2
