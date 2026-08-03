@@ -747,17 +747,15 @@ CGTN纪录
 
     // 频道名标准化函数
     function normalizeChannelName(name) {
-        if (!name) return '';
-        let normalized = name.replace(/[-\s_]+/g, '');
-        const removeWords = ['频道', '普清', '高清', 'HD'];
-        for (let word of removeWords) {
-            const regex = new RegExp(word, 'gi');
-            normalized = normalized.replace(regex, '');
-        }
-        normalized = normalized.toUpperCase();
-        normalized = normalized.trim();
-        return normalized;
-    }
+    if (!name) return '';
+    // 一次性去除空格、下划线、连字符、括号（英文和中文）
+    let normalized = name.replace(/[()（）\s_-]+/g, '');
+    // 只删除末尾的常见后缀（不区分大小写）
+    normalized = normalized.replace(/(频道|普清|标清|高清|超清|超高清|720P|1080P|HD)$/i, '');
+    // 去除可能残留的末尾分隔符
+    normalized = normalized.replace(/[-\s_]+$/, '');
+    return normalized.toUpperCase().trim();
+}
 
     // HTML转义函数
     function escapeHtml(str) {
