@@ -266,7 +266,7 @@
         <td>青海</td>
         <td><a href="./Unicast/qinghai/unicom.txt">🔗单播</a></td>
         <td><a href="./Multicast/qinghai/unicom.txt">🛰️组播</a></td>
-        <td><a href="./Unicast/qinghai/mobile.txt">🌐暂无</a></td>
+        <td><a href="./Unicast/qinghai/mobile.txt">🔗单播</a></td>
         <td><a href="./Multicast/qinghai/mobile.txt">🌐暂无</a></td>
         <td><a href="./Unicast/qinghai/telecom.txt">🔗单播</a></td>
         <td><a href="./Multicast/qinghai/telecom.txt">🛰️组播</a></td>
@@ -342,7 +342,7 @@
         <td>西藏</td>
         <td><a href="./Unicast/xizang/unicom.txt">🌐暂无</a></td>
         <td><a href="./Multicast/xizang/unicom.txt">🌐暂无</a></td>
-        <td><a href="./Unicast/xizang/mobile.txt">🌐暂无</a></td>
+        <td><a href="./Unicast/xizang/mobile.txt">🔗单播</a></td>
         <td><a href="./Multicast/xizang/mobile.txt">🌐暂无</a></td>
         <td><a href="./Unicast/xizang/telecom.txt">🌐暂无</a></td>
         <td><a href="./Multicast/xizang/telecom.txt">🛰️组播</a></td>
