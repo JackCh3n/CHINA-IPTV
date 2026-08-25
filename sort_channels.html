@@ -748,8 +748,8 @@ CGTN纪录
     // 频道名标准化函数
     function normalizeChannelName(name) {
     if (!name) return '';
-    // 一次性去除空格、下划线、连字符、括号（英文和中文）
-    let normalized = name.replace(/[()（）\s_-]+/g, '');
+    // 一次性去除电视台、空格、下划线、连字符、括号（英文和中文）
+    let normalized = name.replace(/[()（）\s_-]+|电视台/g, '');
     // 只删除末尾的常见后缀（不区分大小写）
     normalized = normalized.replace(/(频道|普清|标清|高清|超清|超高清|720P|1080P|HD)$/i, '');
     // 去除可能残留的末尾分隔符
