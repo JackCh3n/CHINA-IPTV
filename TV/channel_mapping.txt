@@ -115,6 +115,7 @@ cgtnru,CGTN俄语
 CGTNRussian,CGTN俄语
 CGTN俄语,CGTN俄语
 CGTN俄语,CGTN俄语
+CGTN俄罗斯语,CGTN俄语
 CGTN阿拉伯语,CGTN阿语
 CGTN阿拉伯语,CGTN阿语
 CGTN阿拉伯语,CGTN阿语
