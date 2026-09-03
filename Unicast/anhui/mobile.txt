@@ -1,3 +1,4 @@
+【来源】https://github.com/xisohi/CHINA-IPTV
 央视,#genre#
 CCTV1,http://120.210.193.151:8006/120000001001/wlds:8080/ysten-business/live/HD-8M-1080P-cctv1/1.m3u8
 CCTV1,http://120.210.193.151:8006/120000001003/live/program/_ahbyfh-1_/live/cctv1hd4mc/index.m3u8
