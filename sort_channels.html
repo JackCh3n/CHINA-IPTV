@@ -1176,6 +1176,9 @@ CGTN纪录
             fileCount2.textContent = uploadedFiles.length;
             stats.style.display = 'flex';
 
+            // 固定声明（可自定义修改）
+            const declaration = '【来源】https://github.com/xisohi/CHINA-IPTV';
+            sortedContent.unshift('', declaration); 
             const result = sortedContent.join('\n');
             resultPreview.value = result;
             downloadBtn.style.display = 'inline-block';
