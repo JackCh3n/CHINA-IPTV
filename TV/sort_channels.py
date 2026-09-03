@@ -222,6 +222,7 @@ def main():
     output_path = "TV/live.txt"
     try:
         with open(output_path, "w", encoding="utf-8") as f:
+            header = "【来源】https://github.com/xisohi/CHINA-IPTV\n\n"
             f.write("\n".join(sorted_content))
         print(f"\n✅ 多源合并完成，已保存为 {output_path}")
         print(f"📊 统计: {matched_count}个匹配频道, {len(other_items)}个未分类频道")
