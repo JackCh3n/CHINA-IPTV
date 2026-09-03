@@ -194,6 +194,11 @@ def main():
             if group == std_category:
                 category_items.extend(items)
         if category_items:
+            # 构建模板顺序索引
+            index_map = {channel: idx for idx, channel in enumerate(channel_list)}
+            max_index = len(channel_list)
+            # 排序：先按模板顺序，未在模板中的放最后
+            category_items.sort(key=lambda item: index_map.get(item[0], max_index + 1))
             sorted_content.append(f"{category},#genre#")
             for name, url in category_items:
                 mapped_name = mapping.get(name, name)
@@ -223,7 +228,7 @@ def main():
     try:
         with open(output_path, "w", encoding="utf-8") as f:
             header = "【来源】https://github.com/xisohi/CHINA-IPTV\n\n"
-            f.write("\n".join(sorted_content))
+            f.write(header + "\n".join(sorted_content))   # 关键修复：加上 header
         print(f"\n✅ 多源合并完成，已保存为 {output_path}")
         print(f"📊 统计: {matched_count}个匹配频道, {len(other_items)}个未分类频道")
         print(f"📊 总计写入频道数: {matched_count + len(other_items)}")
