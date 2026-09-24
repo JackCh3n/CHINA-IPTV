@@ -15,6 +15,7 @@ CCTV12,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227377/index.m3u8
 CCTV13,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227926/index.m3u8
 CCTV14,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227379/index.m3u8
 CCTV15,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227933/index.m3u8
+CCTV16,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227988/index.m3u8
 CCTV17,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221227577/index.m3u8
 CGTN,http://sc.rrs.169ol.com:80/PLTV/88888888/224/3221228075/index.m3u8
 
