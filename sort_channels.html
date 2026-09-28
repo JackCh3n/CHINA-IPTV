@@ -747,15 +747,15 @@ CGTN纪录
 
     // 频道名标准化函数
     function normalizeChannelName(name) {
-    if (!name) return '';
-    // 一次性去除电视台、空格、下划线、连字符、括号（英文和中文）
-    let normalized = name.replace(/[()（）\s_‑-]+|电视台/g, '');
-    // 只删除末尾的常见后缀（不区分大小写）
-    normalized = normalized.replace(/(频道|普清|标清|高清|超清|超高清|720P|1080P|HD)$/i, '');
-    // 去除可能残留的末尾分隔符
-    normalized = normalized.replace(/[-\s_]+$/, '');
-    return normalized.toUpperCase().trim();
-}
+        if (!name) return '';
+        // 一次性去除电视台、空格、下划线、连字符、括号（英文和中文）
+        let normalized = name.replace(/[()（）\s_‑-]+|电视台/g, '');
+        // 只删除末尾的常见后缀（不区分大小写）
+        normalized = normalized.replace(/(频道|普清|标清|高清|超清|超高清|720P|1080P|HD)$/i, '');
+        // 去除可能残留的末尾分隔符
+        normalized = normalized.replace(/[-\s_]+$/, '');
+        return normalized.toUpperCase().trim();
+    }
 
     // HTML转义函数
     function escapeHtml(str) {
@@ -1027,8 +1027,8 @@ CGTN纪录
                 let [oldName, newName] = line.split(',').map(s => s.trim());
                 if (oldName && newName) {
                     const stdKey = normalizeChannelName(oldName);
-                    const stdValue = normalizeChannelName(newName);
-                    mapping[stdKey] = stdValue;
+                    // ✅ value 保留原样，不标准化（保留 4K、空格等有意义的信息）
+                    mapping[stdKey] = newName;
                 }
             }
         });
@@ -1105,12 +1105,14 @@ CGTN纪录
             });
 
             // 第二步：标准化名称并映射
+            // ✅ 同时保留 mappedName（显示名，原样）和 stdName（标准化名，用于匹配模板）
             const mappedItems = allChannels.map(item => {
                 let stdName = normalizeChannelName(item.originalName);
                 const mappedName = mapping[stdName] || stdName;
                 return {
                     line: `${mappedName},${item.url}`,
-                    stdName: mappedName,
+                    mappedName: mappedName,                       // 显示名（原样，保留 4K、空格等）
+                    stdName: normalizeChannelName(mappedName),    // ✅ 标准化名，用于匹配模板
                     url: item.url,
                     originalName: item.originalName,
                     fileName: item.fileName
@@ -1119,7 +1121,7 @@ CGTN纪录
 
             const mappedLines = mappedItems.map(item => item.line);
 
-            // 第三步：按模板排序（先收集匹配的行，再决定是否输出分类）
+            // 第三步：按模板排序（用标准化名精确比较，不再用正则匹配原始行）
             const matchedLines = new Set();
             const sortedContent = [];
             let matchedCategoryCount = 0;   // 匹配分类计数
@@ -1128,12 +1130,10 @@ CGTN纪录
                 const categoryLines = [];   // 存储该分类匹配到的行
                 for (const channel of channels) {
                     const stdChannel = normalizeChannelName(channel);
-                    const channelPattern = stdChannel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    const regex = new RegExp(`^\\s*${channelPattern}\\s*,`, 'i');
-                    for (const line of mappedLines) {
-                        if (regex.test(line) && !matchedLines.has(line)) {
-                            categoryLines.push(line);
-                            matchedLines.add(line);
+                    for (const item of mappedItems) {
+                        if (item.stdName === stdChannel && !matchedLines.has(item.line)) {
+                            categoryLines.push(item.line);
+                            matchedLines.add(item.line);
                         }
                     }
                 }
@@ -1146,7 +1146,10 @@ CGTN纪录
                 }
             }
 
-            const unmatchedLines = mappedLines.filter(line => !matchedLines.has(line));
+            const unmatchedLines = mappedItems
+                .filter(item => !matchedLines.has(item.line))
+                .map(item => item.line);
+
             if (unmatchedLines.length > 0) {
                 sortedContent.push('其它,#genre#');
                 const groupedChannels = {};

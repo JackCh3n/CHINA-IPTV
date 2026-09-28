@@ -71,8 +71,8 @@ def load_channel_mapping():
                     continue
                 old_name, new_name = line.split(",", 1)
                 std_key = normalize_channel_name(old_name.strip())
-                std_value = normalize_channel_name(new_name.strip())
-                mapping[std_key] = std_value
+                # ✅ value 保留原样，不做标准化，保留 4K、空格等有意义的信息
+                mapping[std_key] = new_name.strip()
         print(f"加载映射表成功，共 {len(mapping)} 条映射")
     except Exception as e:
         print(f"加载映射表失败: {e}")
@@ -183,8 +183,9 @@ def main():
 
     # 对每个频道，根据映射后的名称归类
     for name, url in mapped_channels:
-        if name in template_channel_to_category:
-            cat = template_channel_to_category[name]
+        std_name = normalize_channel_name(name)   # ✅ 标准化后再查表
+        if std_name in template_channel_to_category:
+            cat = template_channel_to_category[std_name]
             category_dict[cat].append((name, url))
         else:
             other_list.append((name, url))
@@ -197,7 +198,7 @@ def main():
         if items:
             # 按模板顺序排序（构建索引）
             index_map = {normalize_channel_name(ch): idx for idx, ch in enumerate(ch_list)}
-            items.sort(key=lambda item: index_map.get(item[0], len(ch_list) + 1))
+            items.sort(key=lambda item: index_map.get(normalize_channel_name(item[0]), len(ch_list) + 1))
             sorted_content.append(f"{cat},#genre#")
             for name, url in items:
                 sorted_content.append(f"{name},{url}")
