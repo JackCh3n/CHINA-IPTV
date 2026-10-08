@@ -87,7 +87,7 @@
                 currentGenre = trimmedLine.replace(',#genre#', '');
             } else if (trimmedLine && !trimmedLine.startsWith('#')) {
                 const [channelName, channelUrl] = trimmedLine.split(',');
-                const tvgLogo = `https://epg.112114.xyz/logo/${channelName}.png`;
+                const tvgLogo = `https://iptv.xisohi.dpdns.org/logo/${channelName}.png`;
                 if (keepGroups) {
                     m3uContent += `#EXTINF:-1 group-title="${currentGenre}" tvg-name="${channelName}" tvg-logo="${tvgLogo}" epg-url="${epgUrl || defaultEpgUrl}",${channelName}\n`;
                 } else {
